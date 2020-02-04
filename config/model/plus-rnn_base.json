@@ -1,0 +1,7 @@
+{
+  "model_type": "RNN",
+  "rnn_type": "B",
+  "num_layers": 3,
+  "hidden_dim": 512,
+  "embedding_dim": 100
+}

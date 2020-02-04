@@ -1,0 +1,9 @@
+.data
+pretrained_models
+private
+results
+*.idea*
+*.ipynb_checkpoints*
+*.ipynb
+*.sh
+*.pt

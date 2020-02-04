@@ -1,0 +1,5 @@
+{
+    "train_path":   "./data/Stability/stability_train.fa",
+    "dev_path":     "./data/Stability/stability_dev.fa",
+    "test_path":    "./data/Stability/stability_test.fa"
+}

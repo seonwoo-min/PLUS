@@ -1,0 +1,11 @@
+{
+	"batch_size_train": 32,
+	"batch_size_eval": 256,
+	"num_epochs": 100,
+	"patience": 3,
+	"learning_rate": 0.001,
+	"pr_learning_rate": 0.001,
+	"mask_ratio": 0.15,
+	"max_pred": 50,
+	"cls_loss_lambda": 1.0
+}

@@ -1,0 +1,8 @@
+{
+  "train_path":           "data/Homology/homology_train.fa",
+  "devpairs_path":        "data/Homology/homology_dev_sampledpairs.txt",
+  "2.06testpairs_path":   "data/Homology/homology_test_2.06_sampledpairs.txt",
+  "2.07testpairs_path":   "data/Homology/homology_test_2.07_sampledpairs.txt",
+  "2.06cmap_path":        "data/Homology/cmap_2.06/*/*.png",
+  "2.07cmap_path":        "data/Homology/cmap_2.07/*/*.png"
+}

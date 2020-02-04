@@ -1,0 +1,5 @@
+{
+    "train_path":   "data/Fluorescence/fluorescence_train.fa",
+    "dev_path":     "data/Fluorescence/fluorescence_dev.fa",
+    "test_path":    "data/Fluorescence/fluorescence_test.fa"
+}

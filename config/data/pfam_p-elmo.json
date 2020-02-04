@@ -1,0 +1,4 @@
+{
+  "train_path":   "data/Pfam/Pfam_train.fa",
+  "test_path":    "data/Pfam/Pfam_test.fa"
+}

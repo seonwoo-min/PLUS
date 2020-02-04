@@ -1,0 +1,6 @@
+{
+  "train_path":   "./data/Localization/localization_train.fa",
+  "dev_path":     "./data/Localization/localization_dev.fa",
+  "test_path":    "./data/Localization/localization_test.fa",
+  "truncate":     1000
+}

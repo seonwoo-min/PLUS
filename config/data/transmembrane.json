@@ -1,0 +1,5 @@
+{
+    "train_path":        "data/Transmembrane/transmembrane_train.3line",
+    "dev_path":          "data/Transmembrane/transmembrane_dev.3line",
+    "test_path":         "data/Transmembrane/transmembrane_test.3line"
+}

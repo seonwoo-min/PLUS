@@ -1,0 +1,7 @@
+{
+  "train_path":       "data/Pfam/Pfam_train.fa",
+  "testpairs_path":   "data/Pfam/Pfam_test_sampledpairs.txt",
+  "min_len":          20,
+  "max_len":          256,
+  "min_seq":          1000
+}

@@ -1,0 +1,7 @@
+{
+  "train_path":         "data/SecStr/secstr_train.fa",
+  "dev_path":           "data/SecStr/secstr_dev.fa",
+  "cb513test_path":     "data/SecStr/secstr_test_cb513.fa",
+  "casp12test_path":    "data/SecStr/secstr_test_casp12.fa",
+  "ts115test_path":     "data/SecStr/secstr_test_ts115.fa"
+}

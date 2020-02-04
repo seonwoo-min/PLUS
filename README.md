@@ -1,2 +1,2 @@
-# Bio-PyTorch
-PyTorch library for biological sequences
+# PLUS
+Protein sequence representations Learned Using Structural information (https://arxiv.org/abs/1912.05625)

@@ -1,0 +1,6 @@
+{
+  "model_type": "RNN",
+  "rnn_type": "TFR",
+  "num_layers": 2,
+  "hidden_dim": 1024
+}

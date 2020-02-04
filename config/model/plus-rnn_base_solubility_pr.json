@@ -1,0 +1,5 @@
+{
+	"model_type": "MLP",
+	"projection": false,
+	"hidden_dim": 512
+}
