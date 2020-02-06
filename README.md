@@ -22,5 +22,5 @@
 <br/>
 
 # Data & Models
-Available at our webpage <a href="http://ailab.snu.ac.kr/plus/">(http://ailab.snu.ac.kr/plus/)</a>
+Available at our webpage <a href="http://ailab.snu.ac.kr/PLUS/">(http://ailab.snu.ac.kr/PLUS/)</a>
 <br/><br/><br/>
