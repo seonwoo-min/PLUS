@@ -10,7 +10,7 @@ import numpy as np
 import torch
 import torch.nn.functional as F
 
-from src.data.fasta import parse_ss_stream
+from plus.data.fasta import parse_ss_stream
 
 
 def load_secstr(cfg, idx, encoder, sanity_check=False):

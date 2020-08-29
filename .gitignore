@@ -2,6 +2,8 @@
 .pretrained_models/
 .private/
 .results/
+dist
+.venv
 *.idea*
 *.ipynb_checkpoints*
 *.ipynb

@@ -10,7 +10,7 @@ import torch.nn as nn
 import torch.nn.functional as F
 from torch.nn.utils.rnn import PackedSequence, pack_padded_sequence, pad_packed_sequence
 
-from src.model.plus_rnn import PLUS_RNN
+from plus.model.plus_rnn import PLUS_RNN
 
 class P_ELMo(PLUS_RNN):
     """ P-ELMo model """

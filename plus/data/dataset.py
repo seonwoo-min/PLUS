@@ -11,7 +11,7 @@ import numpy as np
 
 import torch.utils.data
 
-from src.preprocess import preprocess_seq_for_rnn, preprocess_seq_for_tfm, preprocess_label_for_tfm
+from plus.preprocess import preprocess_seq_for_rnn, preprocess_seq_for_tfm, preprocess_label_for_tfm
 
 
 class Pfam_dataset(torch.utils.data.Dataset):

@@ -7,7 +7,7 @@ import numpy as np
 
 import torch
 
-from src.utils import evaluate_result
+from plus.utils import evaluate_result
 
 
 class Trainer():

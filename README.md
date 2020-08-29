@@ -12,11 +12,11 @@
 </p>
 
 # Requirements
-- Python 3.7
+- Python >=3.6
 - PyTorch 1.3.1
 - Numpy 1.17.4
 - SciPy 1.4.1
-- Pandas 0.25.3
+- Pandas 1.1.1
 - Pillow 7.0.0
 - Scikit-learn 0.22.1
 <br/>
