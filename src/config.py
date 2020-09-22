@@ -66,6 +66,7 @@ class ModelConfig():
         else:                       self.model_type = model_type
         self.idx = idx  # config index
         self.max_len = None  # maximum length of input (for PLUS-TFM)
+        self.num_classes = None
 
         if self.model_type == "RNN":
             self.rnn_type = "B"             # type of rnn

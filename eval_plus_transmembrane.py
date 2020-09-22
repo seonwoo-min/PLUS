@@ -118,7 +118,7 @@ def main():
     Print("".join(['elapsed time:', str(end - start)]), output, newline=True)
 
     ## train a model
-    start = Print('start training a model', output)
+    start = Print('start evaluating a model', output)
     Print(trainer.get_headline(test=True), output)
 
     ### evaluate cls
@@ -145,7 +145,7 @@ def main():
     Print(trainer.get_log(test_idx="Transmembrane", args=trainer_args), output)
     trainer.reset()
 
-    end = Print('end training a model', output)
+    end = Print('end evaluating a model', output)
     Print("".join(['elapsed time:', str(end - start)]), output, newline=True)
 
 

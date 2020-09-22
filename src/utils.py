@@ -37,11 +37,11 @@ def set_seeds(seed):
     torch.cuda.manual_seed_all(seed)
 
 
-def set_output(args, string, test=False):
+def set_output(args, string, test=False, embedding=False):
     """ set output configurations """
     output, save_prefix, index = sys.stdout, None, ""
     if args["output_path"] is not None:
-        if not test:
+        if not test and not embedding:
             if not os.path.exists(args["output_path"] + "/weights/"):
                 os.makedirs(args["output_path"] + "/weights/", exist_ok=True)
             if args["output_index"] is not None:
@@ -49,7 +49,7 @@ def set_output(args, string, test=False):
             output = open(args["output_path"] + "/" + index + string + ".txt", "a")
             save_prefix = args["output_path"] + "/weights/" + index
 
-        else:
+        elif not embedding:
             if not os.path.exists(args["output_path"]):
                 os.makedirs(args["output_path"], exist_ok=True)
             if args["pretrained_model"] is not None:
@@ -57,6 +57,16 @@ def set_output(args, string, test=False):
             if args["output_index"] is not None:
                 index += args["output_index"] + "_"
             output = open(args["output_path"] + "/" + index + string + ".txt", "a")
+
+        else:
+            if not os.path.exists(args["output_path"] + "/embeddings/"):
+                os.makedirs(args["output_path"] + "/embeddings/", exist_ok=True)
+            if args["pretrained_model"] is not None:
+                index += os.path.splitext(args["pretrained_model"])[0].split("/")[-1] + "_"
+            if args["output_index"] is not None:
+                index += args["output_index"] + "_"
+            output = open(args["output_path"] + "/" + index + string + ".txt", "a")
+            save_prefix = args["output_path"] + "/embeddings/"
 
     return output, save_prefix
 
@@ -68,8 +78,8 @@ def load_models(args, models, device, data_parallel, output, tfm_cls=True):
         idx = "pretrained_model" if idx == "" else "pretrained_%s_model" % idx
         if idx in args and args[idx] is not None:
             Print('loading %s weights from %s' % (idx, args[idx]), output)
-            if not tfm_cls and idx == "": models[m][0].load_weights(args[idx], tfm_cls)
-            else:                         models[m][0].load_weights(args[idx])
+            if not tfm_cls and idx == "pretrained_model": models[m][0].load_weights(args[idx], tfm_cls)
+            else:                                         models[m][0].load_weights(args[idx])
 
         models[m][0] = models[m][0].to(device)
         if data_parallel: models[m][0] = nn.DataParallel(models[m][0])

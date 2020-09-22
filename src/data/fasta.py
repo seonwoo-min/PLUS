@@ -4,32 +4,25 @@
 
 """ FASTA file loading functions """
 
-import numpy as np
-
 import torch
-import torch.nn.functional as F
 
-def load_fasta(cfg, idx, encoder, onehot=True, label=True, cls=True, sanity_check=False):
+
+def load_fasta(cfg, idx, encoder, sanity_check=False):
     """ load sequence data from FASTA file """
     with open(cfg.path[idx], 'rb') as f:
         sequences, labels = [], []
-        if onehot: eye = torch.eye(len(encoder) - 1).numpy() # excluding 0 reserved for padding tokens
         for name, sequence in parse_stream(f):
-            # input sequence length configurations
-            sequence = encoder.encode(sequence.upper())
-            if cfg.min_len != -1 and len(sequence) < cfg.min_len: continue
-            if cfg.max_len != -1 and len(sequence) > cfg.max_len: continue
+            # protein sequence length configurations
+            if cfg.min_len != -1 and len(sequence) <  cfg.min_len: continue
+            if cfg.max_len != -1 and len(sequence) >  cfg.max_len: continue
             if cfg.truncate != -1 and len(sequence) > cfg.truncate: sequence = sequence[:cfg.truncate]
             if sanity_check and len(sequences) == 100: break
 
-            if onehot: sequences.append(np.transpose(eye[sequence - 1]).astype(np.float32))
-            else: sequences.append(sequence.astype(np.long))
-            if label: labels.append(float(name.decode("utf-8").split()[-1]))
+            sequence = encoder.encode(sequence.upper())
+            sequences.append(sequence)
 
-    sequences = [torch.from_numpy(sequence) for sequence in sequences]
-    labels = torch.from_numpy(np.stack(labels))
-    if cls: labels = F.one_hot(labels.long()).float()
-    return sequences, labels
+    sequences = [torch.from_numpy(sequence).long() for sequence in sequences]
+    return sequences
 
 
 def parse_stream(f, comment=b'#'):

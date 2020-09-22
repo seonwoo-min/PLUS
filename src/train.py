@@ -100,6 +100,15 @@ class Trainer():
             loss_eval += self.tasks_dict["results_eval"][t]["loss"] / self.tasks_dict["results_eval"][t]["n"]
         self.loss_eval = loss_eval
 
+    def embed(self, batch, args={}):
+        # embed protein sequences
+        for model in self.models_dict["model"]: model.eval()
+
+        with torch.no_grad():
+            embeddings = self.get_loss(batch, self.models_dict, args)
+            self.tasks_dict["results_eval"][0]["embeddings"][0] += embeddings[0]
+            self.tasks_dict["results_eval"][0]["embeddings"][1] += embeddings[1]
+
     def save(self, save_prefix, args={}):
         # save current and best models
         if self.dev_available and self.loss_best > self.loss_eval:
@@ -129,13 +138,22 @@ class Trainer():
             if args["data_parallel"]: model.module.load_weights(save_prefix + idx + 'best.pt')
             else: model.load_weights(save_prefix + idx + 'best.pt')
 
+    def save_embeddings(self, save_prefix, args={}):
+        # save embeddings
+        if save_prefix is None: return
+        else:
+            embeddings = self.tasks_dict["results_eval"][0]["embeddings"]
+            for i in range(len(embeddings[0])): np.save(save_prefix + "z%d.npy" % i, embeddings[0][i].numpy())
+            for i in range(len(embeddings[1])): np.save(save_prefix + "h%d.npy" % i, embeddings[1][i].numpy())
+
     def init_flag_result(self, t):
         # initialize training/development dictionaries and flags of a task [t]
         for i in range(2):
             if i == 0: metrics = self.tasks_dict["metrics_train"][t]
             else:      metrics = self.tasks_dict["metrics_eval"][t]
 
-            flag, result = {"exec":True, "acc":False, "conf":False, "pred":False}, {"loss": 0, "n": np.finfo(float).eps}
+            flag = {"exec":True, "acc":False, "conf":False, "pred":False}
+            result = {"loss": 0, "n": np.finfo(float).eps, "embeddings":[[], []]}
             for metric in metrics:
                 if metric in ["acc"]:
                     flag["acc"] = True

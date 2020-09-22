@@ -56,6 +56,14 @@ class P_ELMo(PLUS_RNN):
         z = self.fc(h)
         return z, h
 
+    def em(self, h, lengths, cpu=False):
+        # get representations with different lengths from the collated single matrix
+        e = [None] * len(lengths)
+        for i in range(len(lengths)):
+            if cpu: e[i] = h[i, :lengths[i] - 2].cpu()
+            else:   e[i] = h[i, :lengths[i] - 2]
+        return e
+
 
 class P_ELMo_lm(nn.Module):
     """ language model for P-ELMo """

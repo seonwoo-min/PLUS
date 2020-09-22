@@ -236,6 +236,33 @@ class Seq_dataset(torch.utils.data.Dataset):
         self.augment = augment
 
 
+class Embedding_dataset(torch.utils.data.Dataset):
+    """ Pytorch dataloader for protein sequence embedding """
+    def __init__(self, sequences, encoder, cfg, rnn=False):
+        self.sequences = sequences
+        self.valids = None
+        self.num_alphabets = len(encoder)
+        self.cfg = cfg
+        self.rnn = rnn
+        if not self.rnn: self.set_max_len()
+
+    def __len__(self):
+        return len(self.sequences)
+
+    def __getitem__(self, i):
+        if self.rnn: instance = preprocess_seq_for_rnn(self.sequences[i], self.num_alphabets, self.cfg, augment=False)
+        else:        instance = preprocess_seq_for_tfm(self.sequences[i], None, self.num_alphabets, self.cfg, self.max_len, augment=False)
+
+        return instance
+
+    def set_max_len(self):
+        """ set max_len """
+        self.max_len = 128
+        for sequence in self.sequences:
+            if len(sequence) > self.max_len:
+                self.max_len = len(sequence) + 2
+
+
 def collate_sequences_pelmo(x):
     """ collate sequences with different lengths into a single matrix
         to match the P-ELMo(ICLR19_Bepler) implementation, use 0 for [START / STOP] tokens and mask_idx for [PADDING] """
@@ -315,6 +342,17 @@ def collate_paired_sequences(args):
     elif mlm and not cmap: return x0_block, lengths0, masked_pos0, masked_tokens0, masked_weights0, x1_block, lengths1, masked_pos1, masked_tokens1, masked_weights1, y
     elif not mlm and cmap: return x0_block, lengths0, x1_block, lengths1, y, cmaps0, cmaps1
     else:                  return x0_block, lengths0, x1_block, lengths1, y
+
+
+def collate_sequences_for_embedding(args):
+    x = [a for a in args]
+    lengths = np.array([len(seq) for seq in x])
+    b, l = len(x), max(lengths)
+    x_block = x[0].new_zeros((b, l))
+    for i in range(b):
+        x_block[i, 1:len(x[i])-1] = x[i][1:-1]
+    lengths = torch.from_numpy(lengths)
+    return x_block, lengths
 
 
 class HomolgySampler(torch.utils.data.sampler.Sampler):

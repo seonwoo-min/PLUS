@@ -31,23 +31,27 @@ class PLUS_TFM(nn.Module):
         self.decoder_bias = nn.Parameter(torch.zeros(n_vocab))
 
         # classification
-        self.drop_cls = nn.Dropout(cfg.dropout)
-        self.cls = nn.Linear(cfg.hidden_dim, cfg.num_classes)
+        if cfg.num_classes is not None:
+            self.drop_cls = nn.Dropout(cfg.dropout)
+            self.cls = nn.Linear(cfg.hidden_dim, cfg.num_classes)
 
-    def forward(self, tokens, segments, input_mask, masked_pos=None, per_seq=True):
+    def forward(self, tokens, segments, input_mask, masked_pos=None, per_seq=True, embedding=False):
         h = self.transformer(tokens, segments, input_mask)
 
-        logits_lm = None
-        if masked_pos is not None:
-            masked_pos = masked_pos[:, :, None].expand(-1, -1, h.size(-1))
-            h_masked = torch.gather(h, 1, masked_pos)
-            h_masked = self.norm_lm(tfm.gelu(self.fc_lm(h_masked)))
-            logits_lm = F.log_softmax(self.decoder(h_masked) + self.decoder_bias, dim=2)
+        if embedding:
+            return h
+        else:
+            logits_lm = None
+            if masked_pos is not None:
+                masked_pos = masked_pos[:, :, None].expand(-1, -1, h.size(-1))
+                h_masked = torch.gather(h, 1, masked_pos)
+                h_masked = self.norm_lm(tfm.gelu(self.fc_lm(h_masked)))
+                logits_lm = F.log_softmax(self.decoder(h_masked) + self.decoder_bias, dim=2)
 
-        if per_seq: logits_cls = self.cls(self.drop_cls(h[:, 0]))
-        else:       logits_cls = self.cls(self.drop_cls(h))
+            if per_seq: logits_cls = self.cls(self.drop_cls(h[:, 0]))
+            else:       logits_cls = self.cls(self.drop_cls(h))
 
-        return logits_lm, logits_cls
+            return logits_lm, logits_cls
 
     def load_weights(self, pretrained_model, cls=True):
         # load pre-trained model weights
@@ -56,6 +60,14 @@ class PLUS_TFM(nn.Module):
             if key.startswith("module"): key = key[7:]
             if (cls and state_dict[key].shape == value.shape) or (not cls and "cls" not in key and state_dict[key].shape == value.shape): state_dict[key] = value
         self.load_state_dict(state_dict)
+
+    def em(self, h, input_mask, cpu=False):
+        # get representations with different lengths from the collated single matrix
+        e = [None] * len(input_mask)
+        for i in range(len(input_mask)):
+            if cpu: e[i] = h[i, 1:torch.sum(input_mask[i]) - 1].cpu()
+            else:   e[i] = h[i, 1:torch.sum(input_mask[i]) - 1]
+        return e
 
 
 def get_loss(batch, models_dict, cfg, tasks_dict, args, test=False):
@@ -111,6 +123,20 @@ def get_loss(batch, models_dict, cfg, tasks_dict, args, test=False):
         results.append(result)
 
     return results
+
+
+def get_embedding(batch, models_dict, args):
+    """ feed-forward and evaluate PLUS_TFM model """
+    models, models_idx = models_dict["model"], models_dict["idx"]
+    tokens, segments, input_mask = batch
+
+    model = models[models_idx.index("")]
+    h = model(tokens, segments, input_mask, embedding=True)
+
+    h_list = model.module.em(h, input_mask, cpu=True) if args["data_parallel"] else model.em(h, input_mask, cpu=True)
+    embeddings = [[], h_list]
+
+    return embeddings
 
 
 def evaluate_lm(logits_lm, masked_tokens, masked_weights, flag):

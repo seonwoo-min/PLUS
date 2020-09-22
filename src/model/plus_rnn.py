@@ -67,11 +67,12 @@ class PLUS_RNN(nn.Module):
         # clip the weights of ordinal regression to be non-negative
         self.ordinal_weight.clamp(min=0)
 
-    def em(self, h, lengths):
+    def em(self, h, lengths, cpu=False):
         # get representations with different lengths from the collated single matrix
         e = [None] * len(lengths)
         for i in range(len(lengths)):
-            e[i] = h[i, :lengths[i] - 2]
+            if cpu: e[i] = h[i, :lengths[i] - 2].cpu()
+            else:   e[i] = h[i, :lengths[i] - 2]
         return e
 
     def lm(self, r, masked_pos):
@@ -207,6 +208,28 @@ def get_loss(batch, models_dict, cfg, tasks_dict, args, test=False):
         results.append(result)
 
     return results
+
+
+def get_embedding(batch, models_dict, args):
+    """ get protein embeddings from PLUS_RNN model """
+    models, models_idx = models_dict["model"], models_dict["idx"]
+    tokens, lengths = batch
+
+    # compute protein representations
+    if "lm" not in models_idx:
+        model = models[models_idx.index("")]
+        z, r = model(tokens, lengths)
+    else:
+        model, model_lm = models[models_idx.index("")], models[models_idx.index("lm")]
+        if args["data_parallel"]: tokens_lm = model_lm.module.encode(tokens, lengths)
+        else:                     tokens_lm = model_lm.encode(tokens, lengths)
+        z, r = model(tokens, tokens_lm, lengths)
+
+    z_list = model.module.em(z, lengths, cpu=True) if args["data_parallel"] else model.em(z, lengths, cpu=True)
+    r_list = model.module.em(r, lengths, cpu=True) if args["data_parallel"] else model.em(r, lengths, cpu=True)
+    embeddings = [z_list, r_list]
+
+    return embeddings
 
 
 def evaluate_lm_pelmo(logits_lm, tokens, flag, num_alphabets):
