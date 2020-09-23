@@ -17,13 +17,14 @@ from src.preprocess import preprocess_seq_for_rnn, preprocess_seq_for_tfm, prepr
 class Pfam_dataset(torch.utils.data.Dataset):
     """ Pytorch dataloader for PLUS Pfam training
         if random_pairing is True make random pairs from the same or different families with 0.5 probability """
-    def __init__(self, sequences, structs, structs_idx, encoder, cfg, rnn=True, max_len=None, random_pairing=True, sanity_check=False):
+    def __init__(self, sequences, structs, structs_idx, encoder, cfg, rnn=True, max_len=None, random_pairing=True, augment=True, sanity_check=False):
         self.sequences = sequences
         self.structs = structs
         self.structs_idx = structs_idx
         self.num_alphabets = len(encoder)
         self.cfg = cfg
         self.rnn = rnn
+        self.augment = augment
         self.max_len = max_len
         self.random_pairing = random_pairing
         self.sanity_check = sanity_check
@@ -34,7 +35,7 @@ class Pfam_dataset(torch.utils.data.Dataset):
     def __getitem__(self, i):
         if not self.random_pairing:
             if self.rnn:
-                instance = preprocess_seq_for_rnn(self.sequences[i], self.num_alphabets, self.cfg, augment=False)
+                instance = preprocess_seq_for_rnn(self.sequences[i], self.num_alphabets, self.cfg, self.augment)
                 return instance
             else:
                 sys.exit("PLUS-TFM Pfam pre-training without random pairing is not supported")
@@ -281,29 +282,44 @@ def collate_sequences_pelmo(x):
 
 def collate_sequences(args):
     """ collate sequences with different lengths into a single matrix; use 0 for [START / STOP/ PADDING] tokens """
-    mlm = (len(args[0][0]) == 4)
-    if mlm:
-        x = [a[0][0] for a in args]
-        masked_pos     = torch.stack([a[0][1] for a in args], 0)
-        masked_tokens  = torch.stack([a[0][2] for a in args], 0)
-        masked_weights = torch.stack([a[0][3] for a in args], 0)
-    else: x = [a[0] for a in args]
-    y = [a[1] for a in args]
-    amino_level = (len(y[0]) != 1)
+    label = (len(args[0]) == 2)
+    if label:
+        mlm = (len(args[0][0]) == 4)
+        if mlm:
+            x = [a[0][0] for a in args]
+            masked_pos = torch.stack([a[0][1] for a in args], 0)
+            masked_tokens = torch.stack([a[0][2] for a in args], 0)
+            masked_weights = torch.stack([a[0][3] for a in args], 0)
+        else: x = [a[0] for a in args]
+        y = [a[1] for a in args]
+        amino_level = (len(y[0]) != 1)
+    else:
+        mlm = (len(args[0]) == 4)
+        if mlm:
+            x = [a[0] for a in args]
+            masked_pos = torch.stack([a[1] for a in args], 0)
+            masked_tokens = torch.stack([a[2] for a in args], 0)
+            masked_weights = torch.stack([a[3] for a in args], 0)
+        else: x = [a for a in args]
 
     lengths = np.array([len(seq) for seq in x])
     b, l = len(x), max(lengths)
     x_block = x[0].new_zeros((b, l))
-    if amino_level: y_block = y[0].new_zeros((b, l-2))   # amino-acid level task
-    else:           y_block = torch.stack(y, 0)          # protein-level task
-
     for i in range(b):
         x_block[i, 1:len(x[i])-1] = x[i][1:-1]
-        if amino_level: y_block[i, :len(y[i])] = y[i]
     lengths = torch.from_numpy(lengths)
 
-    if mlm: return x_block, lengths, masked_pos, masked_tokens, masked_weights, y_block
-    else:   return x_block, lengths, y_block
+    if label:
+        if amino_level:
+            y_block = y[0].new_zeros((b, l - 2))  # amino-acid level task
+            for i in range(b): y_block[i, :len(y[i])] = y[i]
+        else:
+            y_block = torch.stack(y, 0)  # protein-level task
+
+    if mlm and label: return x_block, lengths, masked_pos, masked_tokens, masked_weights, y_block
+    elif label:       return x_block, lengths, y_block
+    elif mlm:         return x_block, lengths, masked_pos, masked_tokens, masked_weights
+    else:             return x_block, lengths
 
 
 def collate_paired_sequences(args):

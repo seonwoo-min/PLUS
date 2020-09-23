@@ -115,10 +115,14 @@ def get_loss(batch, models_dict, cfg, tasks_dict, args, test=False):
         tokens0, lengths0, labels = batch
         pelmo_lm_training, pair = False, False
     elif len(batch) == 5:
-        tokens0, lengths0, tokens1, lengths1, labels = batch
-        pelmo_lm_training, pair = False, True
+        if len(batch[3].shape) == 1:
+            tokens0, lengths0, tokens1, lengths1, labels = batch
+            pelmo_lm_training, pair = False, True
+        else:
+            tokens0, lengths0, masked_pos0, masked_tokens0, masked_weights0 = batch
+            pelmo_lm_training, pair = False, False
     elif len(batch) == 6:
-        (tokens0, lengths0, masked_pos0, masked_tokens0, masked_weights0, labels) = batch
+        tokens0, lengths0, masked_pos0, masked_tokens0, masked_weights0, labels = batch
         pelmo_lm_training, pair = False, False
     elif len(batch) == 7:
         tokens0, lengths0, tokens1, lengths1, labels, cmaps0, cmaps1 = batch

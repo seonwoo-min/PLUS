@@ -42,6 +42,7 @@ def main():
     device, data_parallel = torch.device("cuda" if torch.cuda.is_available() else "cpu"), torch.cuda.device_count() > 1
     config.print_configs(args, [data_cfg, model_cfg, run_cfg], device, output)
     flag_rnn = (model_cfg.model_type == "RNN")
+    flag_plus = (model_cfg.rnn_type == "B") if flag_rnn else False
     flag_paired = ("testpairs" in data_cfg.path)
 
     ## load a test dataset
@@ -52,8 +53,9 @@ def main():
     else:
         dataset_test = pfam.load_pfam(data_cfg, "test", alphabet, args["sanity_check"])
         dataset_test = dataset.Pfam_dataset(*dataset_test, alphabet, run_cfg, flag_rnn, model_cfg.max_len,
-                                            random_pairing=flag_paired, sanity_check=args["sanity_check"])
+                                            random_pairing=flag_paired, augment=flag_plus, sanity_check=args["sanity_check"])
     if flag_rnn and flag_paired: collate_fn = dataset.collate_paired_sequences
+    elif flag_rnn and flag_plus: collate_fn = dataset.collate_sequences
     elif flag_rnn:               collate_fn = dataset.collate_sequences_pelmo
     else:                        collate_fn = None
     iterator_test = torch.utils.data.DataLoader(dataset_test, run_cfg.batch_size_eval, collate_fn=collate_fn)
@@ -64,7 +66,7 @@ def main():
     start = Print('start initializing a model', output)
     models_list = [] # list of lists [model, idx, flag_frz, flag_clip_grad, flag_clip_weight]
     if not flag_rnn:                model = plus_tfm.PLUS_TFM(model_cfg)
-    elif model_cfg.rnn_type == "B": model = plus_rnn.PLUS_RNN(model_cfg)
+    elif flag_plus:                 model = plus_rnn.PLUS_RNN(model_cfg)
     else:                           model = p_elmo.P_ELMo_lm(model_cfg)
     models_list.append([model, "", True, False, False])
     load_models(args, models_list, device, data_parallel, output)
