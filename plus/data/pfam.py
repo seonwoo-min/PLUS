@@ -10,7 +10,7 @@ import pandas as pd
 
 import torch
 
-from src.data.fasta import parse_stream
+from plus.data.fasta import parse_stream
 
 
 def load_pfam(cfg, idx, encoder, sanity_check=False):

@@ -11,8 +11,8 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 
-import src.model.transformer as tfm
-from src.data.transmembrane import is_prediction_correct, Grammar
+import plus.model.transformer as tfm
+from plus.data.transmembrane import is_prediction_correct, Grammar
 
 
 class PLUS_TFM(nn.Module):

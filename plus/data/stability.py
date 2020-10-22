@@ -3,35 +3,31 @@
 # - Tristan Bepler's code (https://github.com/tbepler/protein-sequence-embedding-iclr2019)
 # PLUS
 
-""" Localization FASTA file loading functions """
+""" Stability FASTA file loading functions """
 
 import numpy as np
 
 import torch
 
-from src.data.fasta import parse_stream
+from plus.data.fasta import parse_stream
 
 
-locs = {"Cell.membrane":0, "Cytoplasm":1, "Endoplasmic.reticulum":2, "Extracellular":3, "Golgi.apparatus":4,
-        "Lysosome/Vacuole":5, "Mitochondrion":6, "Nucleus":7, "Peroxisome":8, "Plastid":9}
-
-
-def load_localization(cfg, idx, encoder, sanity_check=False):
-    """ load Localization sequence data from FASTA file """
+def load_stability(cfg, idx, encoder, sanity_check=False):
+    """ load Stability sequence data from FASTA file """
     with open(cfg.path[idx], 'rb') as f:
         sequences, labels = [], []
         for name, sequence in parse_stream(f):
             # protein sequence length configurations
             if cfg.min_len != -1 and len(sequence) <  cfg.min_len: continue
             if cfg.max_len != -1 and len(sequence) >  cfg.max_len: continue
-            if cfg.truncate != -1 and len(sequence) > cfg.truncate:
-                sequence = sequence[:cfg.truncate // 2] + sequence[- cfg.truncate // 2:]
+            if cfg.truncate != -1 and len(sequence) > cfg.truncate: sequence = sequence[:cfg.truncate]
             if sanity_check and len(sequences) == 100: break
 
             sequence = encoder.encode(sequence.upper())
-            label = name.decode("utf-8").strip().split()[1].split("-")[0]
-            sequences.append(sequence), labels.append(np.array([locs[label]]))
+            label = name.decode("utf-8").strip().split()[1]
+            sequences.append(sequence), labels.append(np.array([[float(label)]]))
 
     sequences = [torch.from_numpy(sequence).long() for sequence in sequences]
-    labels = torch.from_numpy(np.stack(labels))
+    labels = torch.from_numpy(np.stack(labels, 0)).float()
+
     return sequences, labels

@@ -3,17 +3,17 @@
 # - Tristan Bepler's code (https://github.com/tbepler/protein-sequence-embedding-iclr2019)
 # PLUS
 
-""" Stability FASTA file loading functions """
+""" Fluorescence FASTA file loading functions """
 
 import numpy as np
 
 import torch
 
-from src.data.fasta import parse_stream
+from plus.data.fasta import parse_stream
 
 
-def load_stability(cfg, idx, encoder, sanity_check=False):
-    """ load Stability sequence data from FASTA file """
+def load_fluorescence(cfg, idx, encoder, sanity_check=False):
+    """ load Fluorescence sequence data from FASTA file """
     with open(cfg.path[idx], 'rb') as f:
         sequences, labels = [], []
         for name, sequence in parse_stream(f):

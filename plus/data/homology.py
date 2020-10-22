@@ -15,7 +15,7 @@ from sklearn.metrics import average_precision_score
 
 import torch
 
-from src.data.fasta import parse_stream
+from plus.data.fasta import parse_stream
 
 
 def load_homology(cfg, idx, encoder, contact_map=False, sanity_check=False):

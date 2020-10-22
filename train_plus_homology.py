@@ -8,16 +8,16 @@ import numpy as np
 
 import torch
 
-import src.config as config
-from src.data.alphabets import Protein
-import src.data.homology as homology
-import src.data.dataset as dataset
-import src.model.plus_rnn as plus_rnn
-import src.model.plus_tfm as plus_tfm
-import src.model.p_elmo as p_elmo
-import src.model.cnn as cnn
-from src.train import Trainer
-from src.utils import Print, set_seeds, set_output, load_models
+import plus.config as config
+from plus.data.alphabets import Protein
+import plus.data.homology as homology
+import plus.data.dataset as dataset
+import plus.model.plus_rnn as plus_rnn
+import plus.model.plus_tfm as plus_tfm
+import plus.model.p_elmo as p_elmo
+import plus.model.cnn as cnn
+from plus.train import Trainer
+from plus.utils import Print, set_seeds, set_output, load_models
 
 
 parser = argparse.ArgumentParser('Train a Model on Homology Datasets')

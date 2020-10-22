@@ -3,17 +3,17 @@
 # - Tristan Bepler's code (https://github.com/tbepler/protein-sequence-embedding-iclr2019)
 # PLUS
 
-""" Fluorescence FASTA file loading functions """
+""" Solubility FASTA file loading functions """
 
 import numpy as np
 
 import torch
 
-from src.data.fasta import parse_stream
+from plus.data.fasta import parse_stream
 
 
-def load_fluorescence(cfg, idx, encoder, sanity_check=False):
-    """ load Fluorescence sequence data from FASTA file """
+def load_solubility(cfg, idx, encoder, sanity_check=False):
+    """ load Solubility sequence data from FASTA file """
     with open(cfg.path[idx], 'rb') as f:
         sequences, labels = [], []
         for name, sequence in parse_stream(f):
@@ -25,9 +25,9 @@ def load_fluorescence(cfg, idx, encoder, sanity_check=False):
 
             sequence = encoder.encode(sequence.upper())
             label = name.decode("utf-8").strip().split()[1]
-            sequences.append(sequence), labels.append(np.array([[float(label)]]))
+            sequences.append(sequence), labels.append(np.array([float(label)]))
 
     sequences = [torch.from_numpy(sequence).long() for sequence in sequences]
-    labels = torch.from_numpy(np.stack(labels, 0)).float()
+    labels = torch.from_numpy(np.stack(labels)).long()
 
     return sequences, labels
